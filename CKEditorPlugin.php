@@ -2,8 +2,9 @@
 
 namespace RJPlugins;
 
-use Gdn;
 use Gdn_Plugin;
+use Gdn;
+use Gdn_Format;
 
 class CKEditorPlugin extends Gdn_Plugin {
     /**
