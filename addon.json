@@ -1,0 +1,25 @@
+{
+    "type": "addon",
+    "key": "rj-ckeditor",
+    "name": "CKEditor",
+    "description": "Use CKEditor 5.0 with Vanilla",
+    "license": "MIT",
+    "version": "0.0.1",
+    "settingsUrl": "/settings/ckeditor",
+    "pluginUrl": "https://github.com/r-j/rj-ckeditor",
+    "authors": [
+        {
+            "name": "Robin Jurinka",
+            "homepage": "https://open.vanillaforums.com/profile/r_j"
+        }
+    ],
+    "priority": 10,
+    "className": "CKEditorPlugin",
+    "hasLocale": true,
+    "mobileFriendly": true,
+    "usePopupSettings": true,
+    "requiredTheme": false,
+    "requiredPlugin": false,
+    "allowDisable": true,
+    "hidden": false
+}
