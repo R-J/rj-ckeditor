@@ -33,6 +33,13 @@ class CKEditorPlugin extends Gdn_Plugin {
     }
 
     public function gdn_form_beforeBodyBox_handler($sender, $args) {
+        // Check if Format is Html, return if it is not.
+        $format = $args['Attributes']['Format'] ?? Gdn_Format::defaultFormat();
         echo '<div class="container-ckeditor"></div>';
+        $args['BodyBox'] = str_replace(
+            '<div class="',
+            '<div class="Hidden ',
+            $args['BodyBox']
+        );
     }
 }
