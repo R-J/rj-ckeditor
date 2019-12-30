@@ -1,6 +1,6 @@
 $( document ).on( 'contentLoad', function( e ) {
     const bodyBox = $( '.BodyBox,.js-bodybox', e.target )[0];
-    $( bodyBox ).addClass('Hidden');
+    // $( bodyBox ).addClass('Hidden');
     const container = $( '.container-ckeditor', e.target )[0];
 
     ClassicEditor
