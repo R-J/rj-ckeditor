@@ -1,3 +1,8 @@
+document.addEventListener( 'X-EditCommentFormLoaded', function( e ){
+    console.log( e );
+    console.log( e.target );
+}, false);
+
 document.addEventListener( 'X-ClearCommentForm', function( e ){
     clearInput( e.target );
 }, false);
@@ -14,7 +19,9 @@ function replaceEditor( e ) {
     const container = $( '.BodyBox,.js-bodybox', e.target )[0];
     const bodyBox = container;
     ClassicEditor
-        .create( container )
+        .create( container, {
+            language: 'de'
+        })
         .then( editor => {
             editor.setData( bodyBox.value );
             editor.model.document.on( 'change:data', () => {
