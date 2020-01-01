@@ -1,28 +1,48 @@
-document.addEventListener( 'X-EditCommentFormLoaded', function( e ){
-    console.log( e );
-    console.log( e.target );
-}, false);
+var CKEditors = [];
+var editorCounter = 0;
 
-document.addEventListener( 'X-ClearCommentForm', function( e ){
-    clearInput( e.target );
-}, false);
-
-function clearInput( el ) {
-    const ckeditor = el.querySelector( '.container-editor' );
-}
-
-$( document ).on( 'contentLoad', function( e ) {
-    replaceEditor( e );
+/**
+ * Listen to clear event and clear editor if it is the initial editor.
+ */
+$( document ).on( 'clearCommentForm', function( e ) {
+    const bodyBox = e.target.querySelector('.BodyBox.js-bodybox');
+    const editorId = bodyBox.getAttribute( 'data-ckeditor-id' );
+    if ( editorId == 0 ) {
+        CKEditors[ editorId ].setData( '' );
+    }
 });
 
-function replaceEditor( e ) {
-    const container = $( '.BodyBox,.js-bodybox', e.target )[0];
+/**
+ * Ensure there is a BodyBox before trying to init an editor.
+ */
+$( document ).on( 'contentLoad', function( e ) {
+    const el = $( '.BodyBox,.js-bodybox', e.target )[0];
+    if ( el === undefined ) {
+        return;
+    }
+    const editorId = el.getAttribute( 'data-ckeditor-id' );
+    if ( editorId !== null ) {
+        return;
+    }
+    const editor = createEditor( el );
+});
+
+/**
+ * Replace Vanillas BodyBox with CKEditor
+ */
+function createEditor( el ) {
+    const container = el;
     const bodyBox = container;
-    ClassicEditor
+    // Add ID to be able to distinguish editors later on.
+    bodyBox.setAttribute( 'data-ckeditor-id', editorCounter );
+    return ClassicEditor
         .create( container, {
             language: 'de'
         })
         .then( editor => {
+            // Push editor to global array.
+            CKEditors[ editorCounter ] = editor;
+            editorCounter++;
             editor.setData( bodyBox.value );
             editor.model.document.on( 'change:data', () => {
                 bodyBox.value = editor.getData();
