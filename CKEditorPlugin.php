@@ -31,7 +31,7 @@ class CKEditorPlugin extends Gdn_Plugin {
     public function base_render_before($sender) {
         $sender->addCssFile('rj-ckeditor.css', 'plugins/rj-ckeditor');
         $sender->addJsFile('ckeditor.js', 'plugins/rj-ckeditor');
-        $sender->addJsFile('init.js', 'plugins/rj-ckeditor');
+        $sender->addJsFile('rj-ckeditor.js', 'plugins/rj-ckeditor');
     }
 
     public function gdn_form_beforeBodyBox_handler($sender, $args) {
