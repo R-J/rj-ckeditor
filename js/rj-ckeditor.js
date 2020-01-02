@@ -52,3 +52,12 @@ function createEditor( el ) {
             console.error( error );
         } );
 }
+
+
+/*
+Upload:
+POST to https://open.vanillaforums.com/api/v2/media
+form-data;
+name="file";
+filename="...";
+ */
