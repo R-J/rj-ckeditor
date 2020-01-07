@@ -37,7 +37,14 @@ function createEditor( el ) {
     bodyBox.setAttribute( 'data-ckeditor-id', editorCounter );
     return ClassicEditor
         .create( container, {
-            language: 'de'
+            language: 'de',
+            vanillaUpload: {
+                // The URL the images are uploaded to.
+                uploadUrl: gdn.url('/api/v2/media'),
+                formFields: {
+                    transientKey: gdn.definition('TransientKey')
+                }
+            }
         })
         .then( editor => {
             // Push editor to global array.
