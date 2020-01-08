@@ -44,6 +44,11 @@ function createEditor( el ) {
                 formFields: {
                     transientKey: gdn.definition('TransientKey')
                 }
+            },
+            image: {
+                upload: {
+                    types: gdn.definition('AllowedFileExtensions')
+                }
             }
         })
         .then( editor => {
