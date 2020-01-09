@@ -1,4 +1,4 @@
-var CKEditors = [];
+const CKEditors = [];
 var editorCounter = 0;
 
 /**
@@ -49,6 +49,21 @@ function createEditor( el ) {
                 upload: {
                     types: gdn.definition('AllowedFileExtensions')
                 }
+            },
+            mention: {
+                feeds: [
+                    {
+                        marker: '@',
+                        feed: getMentionedUsers,
+                        // itemRenderer: customMentionedUserRenderer,
+                        minimumCharacters: 2
+                    },
+                    {
+                        marker: '#',
+                        feed: getTags,
+                        minimumCharacters: 2
+                    }
+                ]
             }
         })
         .then( editor => {
@@ -65,11 +80,50 @@ function createEditor( el ) {
         } );
 }
 
-
-/*
-Upload:
-POST to https://open.vanillaforums.com/api/v2/media
-form-data;
-name="file";
-filename="...";
+/**
+ * Must return an array where the name is prefixed with '@'
+ * @param  {[type]} queryText [description]
+ * @return {[type]}           [description]
  */
+function getMentionedUsers( queryText ) {
+    return new Promise( resolve => {
+        setTimeout( () => {
+            const jqxhr = $.get( gdn.url( '/user/tagsearch/' + queryText ), function( data ) {
+                // items = data;
+                items = data.map(data => '@' + data.name);
+                resolve( items );
+            });
+        }, 100 );
+    } );
+}
+
+/**
+ * Currently not needed.
+ *
+ * Could be used to show avatars in mention list.
+ *
+ * @param  {[type]} item [description]
+ * @return {[type]}      [description]
+ */
+function customMentionedUserRenderer( item ) {
+    const itemElement = document.createElement( 'span' );
+
+    itemElement.classList.add( 'custom-item' );
+    itemElement.id = `mention-list-item-id-${ item.id }`;
+    itemElement.textContent = `User: ${ item.name } `;
+
+    return itemElement;
+}
+
+
+function getTags( queryText ) {
+    return new Promise( resolve => {
+        setTimeout( () => {
+            const jqxhr = $.get( gdn.url( '/plugin/ckeditor/tag/' + queryText ), function( data ) {
+                items = data.map(data => '#' + data.FullName);
+                resolve( items );
+            });
+        }, 100 );
+    } );
+
+}
