@@ -29,6 +29,7 @@ import PasteFromOffice from '@ckeditor/ckeditor5-paste-from-office/src/pastefrom
 import Table from '@ckeditor/ckeditor5-table/src/table';
 import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
 
+import Mention from '@ckeditor/ckeditor5-mention/src/mention';
 import VanillaUploadAdapter from '../src/upload/vanillauploadadapter';
 
 export default class ClassicEditor extends ClassicEditorBase {}
@@ -57,7 +58,8 @@ ClassicEditor.builtinPlugins = [
 	PasteFromOffice,
 	Table,
 	TableToolbar,
-	VanillaUploadAdapter
+	VanillaUploadAdapter,
+	Mention
 ];
 
 // Editor configuration.

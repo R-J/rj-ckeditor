@@ -82,16 +82,17 @@ function createEditor( el ) {
 
 /**
  * Must return an array where the name is prefixed with '@'
+ * /api/v2/users/by-names/?name=r%2A&order=mention&limit=50
  * @param  {[type]} queryText [description]
  * @return {[type]}           [description]
  */
 function getMentionedUsers( queryText ) {
     return new Promise( resolve => {
         setTimeout( () => {
-            const jqxhr = $.get( gdn.url( '/user/tagsearch/' + queryText ), function( data ) {
-                // items = data;
-                items = data.map(data => '@' + data.name);
-                resolve( items );
+            const url = gdn.url( '/plugin/ckeditor/mention/?name=' + queryText );
+            const jqxhr = $.get( url, function( data ) {
+                // items = data.map(data => '@' + data.name);
+                resolve( data );
             });
         }, 100 );
     } );

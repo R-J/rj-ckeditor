@@ -5,7 +5,8 @@ namespace RJPlugins;
 use Gdn_Plugin;
 use Gdn;
 use Gdn_Format;
-use UserModel;
+use UsersApiController;
+use Garden\Web\Data as Data;
 
 class CKEditorPlugin extends Gdn_Plugin {
     /**
@@ -44,6 +45,7 @@ class CKEditorPlugin extends Gdn_Plugin {
         $format = $args['Attributes']['Format'] ?? Gdn_Format::defaultFormat();
     }
 
+
     /**
      * Dispatcher.
      *
@@ -70,35 +72,21 @@ class CKEditorPlugin extends Gdn_Plugin {
      * @return [type]         [description]
      */
     public function controller_mention($sender, $args) {
-        return;
-        // No need to allow that to guests...
-        $sender->permission('Garden.SignIn.Allow');
+        $query = Gdn::request()->get();
+        $query['name'] = ($query['name'] ?? '').'*';
+        $usersApiController = GDN::getContainer()->get(UsersApiController::class);
+        $data = $usersApiController->index_byNames($query);
 
-        $search = $args[1] ?? '';
-        $search = trim(str_replace(['%', '_'], ['\%', '\_'], $search));
+        $users = array_map(
+            function($user) {
+                $user['id'] = '@'.$user['name'];
+                return $user;
+            },
+            $data->getData()
+        );
 
-        list($order, $direction) = Gdn::getContainer()->get(UserModel::class)->getMentionsSort();
-
-        $users = Gdn::sql()
-            ->select('Name, UserID, Photo, Email')
-            ->from('User')
-            ->like('Name', $search, 'right')
-            ->where('Deleted', 0)
-            ->orderBy($order, $direction)
-            ->limit($limit)
-            ->get()
-            ->resultArray();
-
-
-        foreach ($users as $key => $user) {
-            if (!$users['Photo']) {
-                $users[$key]['Photo'] = userPhotoDefaultUrl($user);
-            }
-            unset($users[$key]['Email']);
-            $users[$key]['name'] = '@'.$user['Name'];
-        }
-        header('Content-Type: application/json');
-        echo json_encode($users);
+        $data->setData($users);
+        $data->render();
     }
 
     public function controller_tag($sender, $args) {
