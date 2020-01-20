@@ -59,6 +59,7 @@ class CKEditorHtmlFormat extends HtmlFormat {
      * @inheritdoc
      */
     public function renderHtml(string $content, bool $enhance = true): string {
+return 'test';
         $result = $this->htmlSanitizer->filter($content);
 
         if ($this->shouldCleanupLineBreaks) {

@@ -59,10 +59,12 @@ class CKEditorPlugin extends Gdn_Plugin {
      * @param Container $dic
      */
     public function container_init(Container $dic) {
-        // return;
-        $dic->get(FormatService::class)->registerFormat(
-            'html',
-            $dic->get(CKEditorHtmlFormat::class)
+        $dic->rule(Vanilla\Formatting\FormatService::class)->addCall(
+            'registerFormat',
+            [
+                'Html',
+                new \Garden\Container\Reference(RJPlugins\CKEditorHtmlFormat::class)
+            ]
         );
     }
 
