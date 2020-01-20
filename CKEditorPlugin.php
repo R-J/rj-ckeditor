@@ -7,6 +7,16 @@ use Gdn;
 use Gdn_Format;
 use UsersApiController;
 use Garden\Web\Data as Data;
+use Vanilla\Formatting\Html\HtmlSanitizer;
+use Vanilla\EmbeddedContent\LegacyEmbedReplacer\VanillaHtmlFormatter as VanillaHtmlFormatter;
+use HtmlFormatter;
+use CKEditorHtmlFormatter;
+use Garden\Container\Container as Container;
+use Vanilla\Formatting\FormatService;
+use Vanilla\Formatting\Formats\HtmlFormat as HtmlFormat;
+
+// use RJPlugins\CKEditorHtmlFormat;
+
 
 class CKEditorPlugin extends Gdn_Plugin {
     /**
@@ -40,11 +50,26 @@ class CKEditorPlugin extends Gdn_Plugin {
         );
     }
 
-    public function gdn_form_beforeBodyBox_handler($sender, $args) {
-        // Check if Format is Html, return if it is not.
-        $format = $args['Attributes']['Format'] ?? Gdn_Format::defaultFormat();
+    /**
+     * Handle the container init event to register our own html formatter.
+     *
+     * CKEditor5 inserts a lot of CSS classes which are stripped out by the
+     * VanillaHtmlFormatter.
+     *
+     * @param Container $dic
+     */
+    public function container_init(Container $dic) {
+        // return;
+        $dic->get(FormatService::class)->registerFormat(
+            'html',
+            $dic->get(CKEditorHtmlFormat::class)
+        );
     }
 
+    public function gdn_form_beforeBodyBox_handler($sender, $args) {
+        // Add Format to form so it can be checked by js.
+        $format = $args['Attributes']['Format'] ?? Gdn_Format::defaultFormat();
+    }
 
     /**
      * Dispatcher.
@@ -74,7 +99,7 @@ class CKEditorPlugin extends Gdn_Plugin {
     public function controller_mention($sender, $args) {
         $query = Gdn::request()->get();
         $query['name'] = ($query['name'] ?? '').'*';
-        $usersApiController = GDN::getContainer()->get(UsersApiController::class);
+        $usersApiController = Gdn::getContainer()->get(UsersApiController::class);
         $data = $usersApiController->index_byNames($query);
 
         $users = array_map(
