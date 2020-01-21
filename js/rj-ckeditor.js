@@ -33,6 +33,8 @@ $( document ).on( 'contentLoad', function( e ) {
 function createEditor( el ) {
     const container = el;
     const bodyBox = container;
+    // Add class to enhance html preview for keystone.
+    container.parentElement.classList.add( 'userContent' );
     // Add ID to be able to distinguish editors later on.
     bodyBox.setAttribute( 'data-ckeditor-id', editorCounter );
     return ClassicEditor
@@ -81,7 +83,11 @@ function createEditor( el ) {
 }
 
 /**
- * Must return an array where the name is prefixed with '@'
+ * Must return an array with a field "id" that is the user name prefixed with '@'.
+ *
+ * Sort order can be configured through config.php. Sort values must be passed
+ * as definitions so that they can be used here.
+ *
  * /api/v2/users/by-names/?name=r%2A&order=mention&limit=50
  * @param  {[type]} queryText [description]
  * @return {[type]}           [description]
@@ -91,7 +97,6 @@ function getMentionedUsers( queryText ) {
         setTimeout( () => {
             const url = gdn.url( '/plugin/ckeditor/mention/?name=' + queryText );
             const jqxhr = $.get( url, function( data ) {
-                // items = data.map(data => '@' + data.name);
                 resolve( data );
             });
         }, 100 );

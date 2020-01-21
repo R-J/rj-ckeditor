@@ -29,8 +29,9 @@ import PasteFromOffice from '@ckeditor/ckeditor5-paste-from-office/src/pastefrom
 import Table from '@ckeditor/ckeditor5-table/src/table';
 import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
 
-import Mention from '@ckeditor/ckeditor5-mention/src/mention';
 import VanillaUploadAdapter from '../src/upload/vanillauploadadapter';
+import Mention from '@ckeditor/ckeditor5-mention/src/mention';
+import Font from '@ckeditor/ckeditor5-font/src/font';
 
 export default class ClassicEditor extends ClassicEditorBase {}
 
@@ -59,7 +60,8 @@ ClassicEditor.builtinPlugins = [
 	Table,
 	TableToolbar,
 	VanillaUploadAdapter,
-	Mention
+	Mention,
+	Font
 ];
 
 // Editor configuration.
@@ -68,21 +70,14 @@ ClassicEditor.defaultConfig = {
 		items: [
 			'heading',
 			'|',
-			'bold',
-			'italic',
-			'link',
-			'bulletedList',
-			'numberedList',
+			'bold', 'italic', 'link', 'bulletedList', 'numberedList',
 			'|',
-			'indent',
-			'outdent',
+			'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor',
 			'|',
-			'imageUpload',
-			'blockQuote',
-			'insertTable',
-			'mediaEmbed',
-			'undo',
-			'redo'
+			'indent', 'outdent',
+			'|',
+			'imageUpload', 'blockQuote', 'insertTable', 'mediaEmbed',
+			// 'undo', 'redo'
 		]
 	},
 	image: {
