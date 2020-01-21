@@ -125,9 +125,9 @@ function customMentionedUserRenderer( item ) {
 function getTags( queryText ) {
     return new Promise( resolve => {
         setTimeout( () => {
-            const jqxhr = $.get( gdn.url( '/plugin/ckeditor/tag/' + queryText ), function( data ) {
+            const jqxhr = $.get( gdn.url( '/plugin/ckeditor/tag/?name=' + queryText ), function( data ) {
                 items = data.map(data => '#' + data.FullName);
-                resolve( items );
+                resolve( data );
             });
         }, 100 );
     } );

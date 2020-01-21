@@ -95,9 +95,9 @@ class CKEditorPlugin extends Gdn_Plugin {
     /**
      * This endpoint can be used to add user pictures to mentions.
      *
-     * @param  [type] $sender [description]
-     * @param  [type] $args   [description]
-     * @return [type]         [description]
+     * @param [type] $sender [description]
+     * @param [type] $args [description]
+     * @return void.
      */
     public function controller_mention($sender, $args) {
         $query = Gdn::request()->get();
@@ -122,17 +122,45 @@ class CKEditorPlugin extends Gdn_Plugin {
         $data->render();
     }
 
+    /**
+     * Endpoint fo 
+     * @param  [type] $sender [description]
+     * @param  [type] $args   [description]
+     * @return [type]         [description]
+     */
     public function controller_tag($sender, $args) {
         $sender->permission('Garden.SignIn.Allow');
-        $tags = Gdn::sql()
-            // ->select('FullName', "concat('#', %s)", 'name')
-            ->select('FullName')
+
+        $search = Gdn::request()->get('name', '').'%';
+
+        $result = Gdn::sql()
+            ->select('FullName', "concat('#', %s)", 'id')
+            ->select('FullName', '', 'name')
             ->from('Tag')
             ->like('FullName', $search, 'right')
             ->orderBy('CountDiscussions', 'FullName')
             ->get()
             ->resultArray();
 
+        $tags = array_map(
+            function($tag) {
+                $tag['link'] = Gdn::request()->url(
+                    '/discussions/tagged/'.rawurlencode($tag['name'])
+                );
+                return $tag;
+            },
+            $result
+        );
+
+
+/*
+            return new Data($tags);
+            return;
+        $result = new Data();
+        $result->setData($tags);
+        $result->render();
+        return;
+*/
         header('Content-Type: application/json');
         echo json_encode($tags);
     }
