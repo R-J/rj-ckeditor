@@ -123,10 +123,12 @@ class CKEditorPlugin extends Gdn_Plugin {
     }
 
     /**
-     * Endpoint fo 
-     * @param  [type] $sender [description]
-     * @param  [type] $args   [description]
-     * @return [type]         [description]
+     * Endpoint for tag.
+     *
+     * @param PluginController $sender Instance of the calling class.
+     * @param mixed $args Request arguments.
+     *
+     * @return void.
      */
     public function controller_tag($sender, $args) {
         $sender->permission('Garden.SignIn.Allow');
@@ -152,16 +154,8 @@ class CKEditorPlugin extends Gdn_Plugin {
             $result
         );
 
-
-/*
-            return new Data($tags);
-            return;
         $result = new Data();
         $result->setData($tags);
         $result->render();
-        return;
-*/
-        header('Content-Type: application/json');
-        echo json_encode($tags);
     }
 }
