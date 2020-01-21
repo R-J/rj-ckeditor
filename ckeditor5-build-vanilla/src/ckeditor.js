@@ -37,64 +37,149 @@ export default class ClassicEditor extends ClassicEditorBase {}
 
 // Plugins to include in the build.
 ClassicEditor.builtinPlugins = [
-	Essentials,
-	UploadAdapter,
-	Autoformat,
-	Bold,
-	Italic,
-	BlockQuote,
-	CKFinder,
-	EasyImage,
-	Heading,
-	Image,
-	ImageCaption,
-	ImageStyle,
-	ImageToolbar,
-	ImageUpload,
-	Indent,
-	Link,
-	List,
-	MediaEmbed,
-	Paragraph,
-	PasteFromOffice,
-	Table,
-	TableToolbar,
-	VanillaUploadAdapter,
-	Mention,
-	Font
+    Essentials,
+    UploadAdapter,
+    Autoformat,
+    Bold,
+    Italic,
+    BlockQuote,
+    CKFinder,
+    EasyImage,
+    Heading,
+    Image,
+    ImageCaption,
+    ImageStyle,
+    ImageToolbar,
+    ImageUpload,
+    Indent,
+    Link,
+    List,
+    MediaEmbed,
+    Paragraph,
+    PasteFromOffice,
+    Table,
+    TableToolbar,
+    VanillaUploadAdapter,
+    Mention,
+    MentionCustomization,
+    Font
 ];
 
 // Editor configuration.
 ClassicEditor.defaultConfig = {
-	toolbar: {
-		items: [
-			'heading',
-			'|',
-			'bold', 'italic', 'link', 'bulletedList', 'numberedList',
-			'|',
-			'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor',
-			'|',
-			'indent', 'outdent',
-			'|',
-			'imageUpload', 'blockQuote', 'insertTable', 'mediaEmbed',
-			// 'undo', 'redo'
-		]
-	},
-	image: {
-		toolbar: [
-			'imageStyle:full',
-			'imageStyle:side',
-			'|',
-			'imageTextAlternative'
-		]
-	},
-	table: {
-		contentToolbar: [
-			'tableColumn',
-			'tableRow',
-			'mergeTableCells'
-		]
-	},
-	// This value must be kept in sync with the language defined in webpack.config.js.
-	language: 'en'
+    toolbar: {
+        items: [
+            'heading',
+            '|',
+            'bold', 'italic', 'link', 'bulletedList', 'numberedList',
+            '|',
+            'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor',
+            '|',
+            'indent', 'outdent',
+            '|',
+            'imageUpload', 'blockQuote', 'insertTable', 'mediaEmbed',
+            // 'undo', 'redo'
+        ]
+    },
+    image: {
+        toolbar: [
+            'imageStyle:full',
+            'imageStyle:side',
+            '|',
+            'imageTextAlternative'
+        ]
+    },
+    table: {
+        contentToolbar: [
+            'tableColumn',
+            'tableRow',
+            'mergeTableCells'
+        ]
+    },
+    // This value must be kept in sync with the language defined in webpack.config.js.
+    language: 'en'
 };
+
+
+
+function MentionCustomization( editor ) {
+    const tagClass = 'ck-tag';
+    const mentionClass = 'ck-mention';
+
+    // User mention
+    editor.conversion.for( 'upcast' ).elementToAttribute( {
+        view: {
+            name: 'a',
+            key: 'data-mention',
+            classes: 'ck-mention',
+            attributes: {
+                href: true,
+                'data-user-id': true
+            }
+        },
+        model: {
+            key: 'mention',
+            value: viewItem => {
+                const mentionAttribute = editor.plugins.get( 'Mention' ).toMentionAttribute( viewItem, {
+                    link: viewItem.getAttribute( 'href' ),
+                    userId: viewItem.getAttribute( 'data-user-id' )
+                } );
+
+                return mentionAttribute;
+            }
+        },
+        converterPriority: 'high'
+    } );
+
+    // Tag mention
+    editor.conversion.for( 'upcast' ).elementToAttribute( {
+        view: {
+            name: 'a',
+            key: 'data-tag',
+            classes: 'ck-tag',
+            attributes: {
+                href: true
+            }
+        },
+        model: {
+            key: 'mention',
+            value: viewItem => {
+                const mentionAttribute = editor.plugins.get( 'Mention' ).toMentionAttribute( viewItem, {
+                    link: viewItem.getAttribute( 'href' )
+                } );
+
+                return mentionAttribute;
+            }
+        },
+        converterPriority: 'high'
+    } );
+
+    // Downcast the model 'mention' text attribute to a view <a> element.
+    editor.conversion.for( 'downcast' ).attributeToElement( {
+        model: 'mention',
+        view: ( modelAttributeValue, viewWriter ) => {
+            // Do not convert empty attributes (lack of value means no mention).
+            if ( !modelAttributeValue ) {
+                return;
+            }
+            switch ( modelAttributeValue.id.substr( 0, 1 ) ) {
+                case'@':
+                    return viewWriter.createAttributeElement( 'a', {
+                        class: 'ck-mention',
+                        'data-mention': modelAttributeValue.id,
+                        'data-user-id': modelAttributeValue.userID,
+                        'href': modelAttributeValue.link
+                    } );
+                    break;
+                case '#':
+	                return viewWriter.createAttributeElement( 'a', {
+	                    class: 'ck-tag',
+	                    'data-tag': modelAttributeValue.id,
+	                    'href': modelAttributeValue.link
+	                } );
+	                break;
+            }
+        },
+        converterPriority: 'high'
+    } );
+}

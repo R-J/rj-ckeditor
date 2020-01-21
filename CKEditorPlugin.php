@@ -59,6 +59,7 @@ class CKEditorPlugin extends Gdn_Plugin {
      * @param Container $dic
      */
     public function container_init(Container $dic) {
+        return;
         $dic->rule(Vanilla\Formatting\FormatService::class)->addCall(
             'registerFormat',
             [
@@ -104,14 +105,19 @@ class CKEditorPlugin extends Gdn_Plugin {
         $usersApiController = Gdn::getContainer()->get(UsersApiController::class);
         $data = $usersApiController->index_byNames($query);
 
+        $nameUnique = Gdn::config('Garden.Registration.NameUnique');
         $users = array_map(
             function($user) {
                 $user['id'] = '@'.$user['name'];
+                $user['link'] = Gdn::request()->url(
+                    '/profile/'.
+                    ($nameUnique ? '' : $user['userID'].'/').
+                    rawurlencode($user['name'])
+                );
                 return $user;
             },
             $data->getData()
         );
-
         $data->setData($users);
         $data->render();
     }
