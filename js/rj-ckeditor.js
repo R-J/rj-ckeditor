@@ -39,7 +39,21 @@ function createEditor( el ) {
     bodyBox.setAttribute( 'data-ckeditor-id', editorCounter );
     return ClassicEditor
         .create( container, {
-            language: 'de',
+            toolbar: [
+                'heading',
+                '|',
+                'bold', 'italic', 'underline', 'strikethrough', 'code','subscript', 'superscript', 'removeFormat',
+                '|',
+                'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor',
+                '|',
+                'link', 'bulletedList', 'numberedList', 'alignment', 'horizontalLine',
+                '|',
+                'imageUpload', 'blockQuote', 'codeBlock', 'insertTable', 'mediaEmbed',
+                'undo', 'redo'
+            ],
+            table: {
+                contentToolbar: [ 'tableColumn', 'tableRow', 'mergeTableCells', 'setHeaderRowCommand' ]
+            },
             vanillaUpload: {
                 // The URL the images are uploaded to.
                 uploadUrl: gdn.url('/api/v2/media'),
@@ -65,6 +79,16 @@ function createEditor( el ) {
                         feed: getTags,
                         minimumCharacters: 2
                     }
+                ]
+            },
+            codeBlock: {
+                languages: [
+                    { language: 'plaintext', label: 'Plain text' },
+                    { language: 'php', label: 'PHP' },
+                    { language: 'javascript', label: 'JavaScript' },
+                    { language: 'html', label: 'HTML' },
+                    { language: 'css', label: 'CSS' },
+                    { language: 'python', label: 'Python' }
                 ]
             }
         })
