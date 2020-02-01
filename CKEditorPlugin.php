@@ -48,6 +48,19 @@ class CKEditorPlugin extends Gdn_Plugin {
             'AllowedFileExtensions',
             Gdn::config('Garden.Upload.AllowedFileExtensions', [])
         );
+        $toolbar = explode(
+            ',',
+            Gdn::config(
+                'Plugins.CKEditor.Toolbar',
+                'bold,italic,underline,strikethrough,code,subscript,superscript,removeFormat,|,'.
+                'link,imageUpload,|,'.
+                'fontSize,fontFamily,fontColor,fontBackgroundColor,|,'.
+                'blockQuote,codeBlock,heading,bulletedList,numberedList,alignment,|,'.
+                'horizontalLine,insertTable,mediaEmbed,|,'.
+                'undo,redo'
+            )
+        );
+        $sender->addDefinition('CKEditorToolbar', $toolbar);
     }
 
     /**
