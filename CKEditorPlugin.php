@@ -54,7 +54,6 @@ class CKEditorPlugin extends Gdn_Plugin {
                 'Plugins.CKEditor.Toolbar',
                 'bold,italic,underline,strikethrough,code,subscript,superscript,removeFormat,|,'.
                 'link,imageUpload,|,'.
-                'fontSize,fontFamily,fontColor,fontBackgroundColor,|,'.
                 'blockQuote,codeBlock,heading,bulletedList,numberedList,alignment,|,'.
                 'horizontalLine,insertTable,mediaEmbed,|,'.
                 'undo,redo'
