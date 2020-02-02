@@ -13,17 +13,24 @@ $( document ).on( 'clearCommentForm', function( e ) {
 });
 
 /**
- * Ensure there is a BodyBox before trying to init an editor.
+ * Do some checks before creating an editor.
  */
 $( document ).on( 'contentLoad', function( e ) {
     const el = $( '.BodyBox,.js-bodybox', e.target )[0];
+    // Break if no BodyBox exists.
     if ( el === undefined ) {
         return;
     }
+    // Break if format is not Html.
+    if (el.getAttribute('Format') != 'Html') {
+        return;
+    }
+    // Break if BodyBox is already a ckeditor.
     const editorId = el.getAttribute( 'data-ckeditor-id' );
     if ( editorId !== null ) {
         return;
     }
+    // All checks passed, create editor!
     const editor = createEditor( el );
 });
 
@@ -33,27 +40,11 @@ $( document ).on( 'contentLoad', function( e ) {
 function createEditor( el ) {
     const container = el;
     const bodyBox = container;
-    // Add class to enhance html preview for keystone.
-    container.parentElement.classList.add( 'userContent' );
     // Add ID to be able to distinguish editors later on.
     bodyBox.setAttribute( 'data-ckeditor-id', editorCounter );
     return ClassicEditor
         .create( container, {
-            toolbar: [
-                'heading',
-                '|',
-                'bold', 'italic', 'underline', 'strikethrough', 'code','subscript', 'superscript', 'removeFormat',
-                '|',
-                'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor',
-                '|',
-                'link', 'bulletedList', 'numberedList', 'alignment', 'horizontalLine',
-                '|',
-                'imageUpload', 'blockQuote', 'codeBlock', 'insertTable', 'mediaEmbed',
-                'undo', 'redo'
-            ],
-            table: {
-                contentToolbar: [ 'tableColumn', 'tableRow', 'mergeTableCells', 'setHeaderRowCommand' ]
-            },
+            language: 'de',
             vanillaUpload: {
                 // The URL the images are uploaded to.
                 uploadUrl: gdn.url('/api/v2/media'),
@@ -80,16 +71,6 @@ function createEditor( el ) {
                         minimumCharacters: 2
                     }
                 ]
-            },
-            codeBlock: {
-                languages: [
-                    { language: 'plaintext', label: 'Plain text' },
-                    { language: 'php', label: 'PHP' },
-                    { language: 'javascript', label: 'JavaScript' },
-                    { language: 'html', label: 'HTML' },
-                    { language: 'css', label: 'CSS' },
-                    { language: 'python', label: 'Python' }
-                ]
             }
         })
         .then( editor => {
@@ -107,21 +88,17 @@ function createEditor( el ) {
 }
 
 /**
- * Must return an array with a field "id" that is the user name prefixed with '@'.
- *
- * Sort order can be configured through config.php. Sort values must be passed
- * as definitions so that they can be used here.
- *
- * /api/v2/users/by-names/?name=r%2A&order=mention&limit=50
+ * Must return an array where the name is prefixed with '@'
  * @param  {[type]} queryText [description]
  * @return {[type]}           [description]
  */
 function getMentionedUsers( queryText ) {
     return new Promise( resolve => {
         setTimeout( () => {
-            const url = gdn.url( '/plugin/ckeditor/mention/?name=' + queryText );
-            const jqxhr = $.get( url, function( data ) {
-                resolve( data );
+            const jqxhr = $.get( gdn.url( '/user/tagsearch/' + queryText ), function( data ) {
+                // items = data;
+                items = data.map(data => '@' + data.name);
+                resolve( items );
             });
         }, 100 );
     } );
@@ -149,9 +126,9 @@ function customMentionedUserRenderer( item ) {
 function getTags( queryText ) {
     return new Promise( resolve => {
         setTimeout( () => {
-            const jqxhr = $.get( gdn.url( '/plugin/ckeditor/tag/?name=' + queryText ), function( data ) {
+            const jqxhr = $.get( gdn.url( '/plugin/ckeditor/tag/' + queryText ), function( data ) {
                 items = data.map(data => '#' + data.FullName);
-                resolve( data );
+                resolve( items );
             });
         }, 100 );
     } );
