@@ -34,9 +34,8 @@ class CKEditorPlugin extends Gdn_Plugin {
      *  @return void.
      */
     public function structure() {
-        // $Configuration['Garden']['InputFormatter'] = 'Rich'; // Html, BBCode, Markdown, Text, Rich
-        // $Configuration['Garden']['MobileInputFormatter'] = 'Rich';
         Gdn::config()->saveToConfig('Garden.InputFormatter', 'Html');
+        Gdn::config()->saveToConfig('Garden.MobileInputFormatter', 'Html');
     }
 
 
