@@ -80,11 +80,6 @@ class CKEditorPlugin extends Gdn_Plugin {
         );
     }
 
-    public function gdn_form_beforeBodyBox_handler($sender, $args) {
-        // Add Format to form so it can be checked by js.
-        $format = $args['Attributes']['Format'] ?? Gdn_Format::defaultFormat();
-    }
-
     /**
      * Dispatcher.
      *
