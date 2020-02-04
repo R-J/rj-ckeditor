@@ -1,20 +1,14 @@
 <?php
 
-use Garden\Web\Data;
+namespace RJPlugins;
 
-/*
-use Garden\SafeCurl\Exception\InvalidURLException;
-use Garden\Schema\Schema;
-use Garden\Web\Exception\ClientException;
-use Garden\Web\Exception\NotFoundException;
-use Vanilla\ApiUtils;
-use \Vanilla\EmbeddedContent\EmbedService;
-use Vanilla\FeatureFlagHelper;
+use AbstractApiController;
+use Gdn;
+use MediaApiController;
+use MediaModel;
 use Vanilla\ImageResizer;
-use Vanilla\UploadedFile;
-use Vanilla\UploadedFileSchema;
-use \Vanilla\EmbeddedContent\AbstractEmbed;
-*/
+use RJPlugins\CKEditorPlugin;
+use Garden\Web\Data;
 
 /**
  * Custom API Controller uploads with the CKEditor.
@@ -31,29 +25,74 @@ class CKEditorApiController extends AbstractApiController {
      * @return array
      */
     public function post_upload(array $body) {
-        // Todo: try Gdn::getContainer()->get(MediaApiController::class)
-        $mediaApiController = new MediaApiController(
-            Gdn::getContainer()->get(MediaModel::class),
-            Gdn::getContainer()->get(\Vanilla\EmbeddedContent\EmbedService::class),
-            Gdn::getContainer()->get(\Vanilla\ImageResizer::class),
-            Gdn::getContainer()->get(Gdn_Configuration::class)
-        );
+        // TODO: Move resizing after comment/discussion has been posted!
+        // Wichtich...
+        // 
+        $container = Gdn::getContainer();
 
-        $mediaDummy = $mediaApiController->mediaByID(1);
+        // Default API upload.
+        $mediaApiController = $container->get(MediaApiController::class);
+        $result = $mediaApiController->post($body);
 
-        try {
-            $body['file'] = $body['upload'];
-            $media = $mediaApiController->post($body);
-            return new Data([
-                'uploaded' => true,
-                'url' => $mediaDummy->Path
-            ]);
-        } catch (Exception $ex) {
-            return new Data([
-                'uploaded' => false,
-                'message' => $ex->getMessage()
-            ]);
+        // Fetch Media to get the path.
+        $mediaModel = $container->get(MediaModel::class);
+        $mediaPath = $mediaModel->getID($result['mediaID'])->Path;
+
+        // Prepare resizing.
+        $sourceFile = PATH_UPLOADS . '/' . $mediaPath;
+        $pathInfo = pathinfo($sourceFile);
+        $thumbSize = Gdn::config('Garden.Thumbnail.Size');
+        $thumbPath = $pathInfo['dirname'] . '/thumbs';
+
+        // Ensure thumb path exists.
+        if (!file_exists($thumbPath)) {
+            mkdir($thumbPath);
         }
+        // Resize image.
+        $thumb = Gdn::getContainer()->get(ImageResizer::class)->resize(
+            $sourceFile,
+            $thumbPath . '/t_' . $pathInfo['basename'],
+            [
+                'width' => $thumbSize,
+                'height' => $thumbSize,
+                false
+            ]
+        );
+        // Save thumb info to Media.
+        $uploadPathLength = strlen(PATH_UPLOADS);
+        $thumbMediaPath = substr($thumb['path'], $uploadPathLength + 1);
+        $mediaModel->save([
+            'MediaID' => $result['mediaID'],
+            'ThumbWidth' => $thumb['width'],
+            'ThumbHeight' => $thumb['height'],
+            'ThumbPath' => $thumbMediaPath
+        ]);
+
+        // Return uploaded file result.
+        return $result;
+
+        /*
+        stdClass Object
+        (
+            [url] => https://...de/uploads/584/DML1W5WXYZWU.jpg
+            [name] => photo5247031627513702631.jpg
+            [type] => image/jpeg
+            [size] => 89678
+            [width] => 1280
+            [height] => 720
+            [mediaID] => 25
+            [dateInserted] => stdClass Object
+                (
+                    [date] => 2020-02-04 15:05:06.000000
+                    [timezone_type] => 3
+                    [timezone] => UTC
+                )
+
+            [insertUserID] => 2
+            [foreignType] => embed
+            [foreignID] => 2
+        )
+         */
     }
 
     /**

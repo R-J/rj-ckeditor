@@ -47,7 +47,8 @@ function createEditor( el ) {
             language: 'de',
             vanillaUpload: {
                 // The URL the images are uploaded to.
-                uploadUrl: gdn.url('/api/v2/media'),
+                // uploadUrl: gdn.url('/api/v2/media'),
+                uploadUrl: gdn.url('/api/v2/ckeditor/upload'),
                 formFields: {
                     transientKey: gdn.definition('TransientKey')
                 }
