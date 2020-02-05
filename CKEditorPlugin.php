@@ -14,6 +14,9 @@ use CKEditorHtmlFormatter;
 use Garden\Container\Container as Container;
 use Vanilla\Formatting\FormatService;
 use Vanilla\Formatting\Formats\HtmlFormat as HtmlFormat;
+use MediaModel;
+use Vanilla\ImageResizer;
+
 
 // use RJPlugins\CKEditorHtmlFormat;
 
@@ -59,6 +62,104 @@ class CKEditorPlugin extends Gdn_Plugin {
             )
         );
         $sender->addDefinition('CKEditorToolbar', $toolbar);
+    }
+
+    public function vanillaController_cke_create($sender) {
+        $args['CommentID'] = 999;
+        $args['FormPostValues']['MediaIDs'] = '31,32,33,34,35,36,37';
+        $result = $this->commentModel_afterSaveComment_handler($sender, $args);
+        decho($result);
+    }
+
+    private function attachThumbInfo($media, $size, $imageResizer) {
+        $sourceFile = PATH_UPLOADS . '/' . $media['Path'];
+        $pathInfo = pathinfo($sourceFile);
+        $thumbPath = $pathInfo['dirname'] . '/thumbs';
+        // Ensure thumb path exists.
+        if (!file_exists($thumbPath)) {
+            mkdir($thumbPath);
+        }
+        // Resize image.
+        $thumb = $imageResizer->resize(
+            $sourceFile,
+            $thumbPath . '/t_' . $pathInfo['basename'],
+            ['width' => $size, 'height' => $size, false]
+        );
+        // Save thumb info to Media.
+        $uploadPathLength = strlen(PATH_UPLOADS);
+        $thumbMediaPath = substr($thumb['path'], $uploadPathLength + 1);
+        $media['ThumbWidth'] = $thumb['width'];
+        $media['ThumbHeight'] = $thumb['height'];
+        $media['ThumbPath'] = $thumbMediaPath;
+
+        return $media;
+    }
+
+    private function updateMediaTable($foreignTable, $foreignID, $mediaIDs) {
+        $userID = Gdn::session()->UserID;
+        $mediaModel = Gdn::getContainer()->get(MediaModel::class);
+        $media = $mediaModel->getWhere([
+            'MediaID' => $mediaIDs,
+            'InsertUserID' => $userID,
+            'ForeignID' => $userID,
+            'ForeignTable' => 'embed'
+        ])->resultArray();
+
+        $thumbSize = Gdn::config('Garden.Thumbnail.Size');
+        $imageResizer = Gdn::getContainer()->get(ImageResizer::class);
+        $sql = Gdn::sql();
+        $tableName = $sql->Database->DatabasePrefix.'Media';
+        $query = '';
+        foreach ($media as $key => $mediaItem) {
+            if (!$mediaItem['ThumbPath']) {
+                $media[$key] = $this->attachThumbInfo($mediaItem, $thumbSize, $imageResizer);
+            }
+            $media[$key]['ForeignID'] = $foreignID;
+            $media[$key]['ForeignTable'] = $foreignTable;
+            $mediaModel->update(
+                $media[$key],
+                ['MediaID' => $mediaItem['MediaID']]
+            );
+        }
+    }
+
+    public function discussionModel_afterSaveComment_handler($sender, $args) {
+        // Ensure there is anything to do at all.
+        if (($args['FormPostValues']['MediaIDs'] ?? false) == false) {
+            return;
+        }
+
+        $this->updateMediaTable(
+            'Discussion',
+            $args['DiscussionID'],
+            explode(',', $args['FormPostValues']['MediaIDs'])
+        );
+    }
+
+    public function commentModel_afterSaveComment_handler($sender, $args) {
+        // Ensure there is anything to do at all.
+        if (($args['FormPostValues']['MediaIDs'] ?? false) == false) {
+            return;
+        }
+
+        $this->updateMediaTable(
+            'Comment',
+            $args['CommentID'],
+            explode(',', $args['FormPostValues']['MediaIDs'])
+        );
+    }
+
+    public function conversationMessageModel_afterSave_handler($sender, $args) {
+        // Ensure there is anything to do at all.
+        if (($args['FormPostValues']['MediaIDs'] ?? false) == false) {
+            return;
+        }
+
+        $this->updateMediaTable(
+            'ConversationMessage',
+            $args['Message']['MessageID'],
+            explode(',', $args['FormPostValues']['MediaIDs'])
+        );
     }
 
     /**
