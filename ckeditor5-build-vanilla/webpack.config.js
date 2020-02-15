@@ -12,6 +12,7 @@ const webpack = require( 'webpack' );
 const { bundler, styles } = require( '@ckeditor/ckeditor5-dev-utils' );
 const CKEditorWebpackPlugin = require( '@ckeditor/ckeditor5-dev-webpack-plugin' );
 const TerserPlugin = require( 'terser-webpack-plugin' );
+const FileManagerPlugin = require('filemanager-webpack-plugin');
 
 module.exports = {
 	devtool: 'source-map',
@@ -55,6 +56,14 @@ module.exports = {
 		new webpack.BannerPlugin( {
 			banner: bundler.getLicenseBanner(),
 			raw: true
+		} ),
+		new FileManagerPlugin( {
+			onEnd: {
+				copy: [
+					{source: 'build/ckeditor.js', destination: '../js/ckeditor.js'},
+					{source: 'build/ckeditor.js.map', destination: '../js/ckeditor.js.map'}
+				]
+			}
 		} )
 	],
 
