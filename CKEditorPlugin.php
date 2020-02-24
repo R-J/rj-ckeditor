@@ -32,7 +32,7 @@ class CKEditorPlugin extends Gdn_Plugin {
     }
 
     /**
-     *  Create tables and/or new columns.
+     *  Ensure posting format is Html.
      *
      *  @return void.
      */
@@ -41,16 +41,14 @@ class CKEditorPlugin extends Gdn_Plugin {
         Gdn::config()->saveToConfig('Garden.MobileInputFormatter', 'Html');
     }
 
-
+    /**
+     * Pass some configurations to JS.
+     *
+     * @param Gdn_Controller $sender Instance of the calling class.
+     *
+     * @return void.
+     */
     public function base_render_before($sender) {
-        // $sender->addCssFile('rj-ckeditor.css', 'plugins/rj-ckeditor');
-        // $sender->addCssFile('ckeditor.css', 'plugins/rj-ckeditor');
-        // $sender->addJsFile('ckeditor.js', 'plugins/rj-ckeditor');
-        // $sender->addJsFile('rj-ckeditor.js', 'plugins/rj-ckeditor');
-        $sender->addDefinition(
-            'AllowedFileExtensions',
-            Gdn::config('Garden.Upload.AllowedFileExtensions', [])
-        );
         $toolbar = explode(
             ',',
             Gdn::config(
@@ -63,21 +61,33 @@ class CKEditorPlugin extends Gdn_Plugin {
             )
         );
         $sender->addDefinition('CKEditorToolbar', $toolbar);
+        $sender->addDefinition('CKEditorLanguage', Gdn::locale()->language());
+        $sender->addDefinition(
+            'AllowedFileExtensions',
+            Gdn::config('Garden.Upload.AllowedFileExtensions', [])
+        );
     }
 
+    /**
+     * Inject CKEditor JS at the end of the page.
+     *
+     * @param Gdn_controller $sender Instance of the calling class.
+     *
+     * @return void.
+     */
     public function base_afterBody_handler($sender) {
-            $assetPath = asset('/plugins/rj-ckeditor/js');
-        // echo '<script src="'.$assetPath.'/ckeditor.js'.'"></script>';
-        echo '<script src="'.$assetPath.'/rj-ckeditor.js'.'"></script>';
+        echo '<script src="'.asset('/plugins/rj-ckeditor/js/rj-ckeditor.js').'"></script>';
     }
 
-    public function vanillaController_cke_create($sender) {
-        $args['CommentID'] = 999;
-        $args['FormPostValues']['MediaIDs'] = '31,32,33,34,35,36,37';
-        $result = $this->commentModel_afterSaveComment_handler($sender, $args);
-        decho($result);
-    }
-
+    /**
+     * Create thumbnail and return info about thumb created.
+     *
+     * @param array $media Media item.
+     * @param int $size The size the thumbnail should be created.
+     * @param ImageResizer $imageResizer
+     *
+     * @return mixed Width, height, path of the thumb.
+     */
     private function attachThumbInfo($media, $size, $imageResizer) {
         $sourceFile = PATH_UPLOADS . '/' . $media['Path'];
         $pathInfo = pathinfo($sourceFile);
@@ -102,9 +112,24 @@ class CKEditorPlugin extends Gdn_Plugin {
         return $media;
     }
 
+    /**
+     * Update media table info concerning foreign id and thumbnail info.
+     *
+     * @param string $foreignTable The name of the foreign type table
+     * @param int $foreignID The id of the foreign type.
+     * @param arrray $mediaIDs Array of MediaIDs contained in the foreign type.
+     *
+     * @return void.
+     */
     private function updateMediaTable($foreignTable, $foreignID, $mediaIDs) {
+        // Return if post contains no media.
+        if (count($mediaIDs) == 0) {
+            return;
+        }
         $userID = Gdn::session()->UserID;
         $mediaModel = Gdn::getContainer()->get(MediaModel::class);
+        // Fetch info from Media table for all IDs. Must match
+        // session user = insert user!
         $media = $mediaModel->getWhere([
             'MediaID' => $mediaIDs,
             'InsertUserID' => $userID,
@@ -112,17 +137,20 @@ class CKEditorPlugin extends Gdn_Plugin {
             'ForeignTable' => 'embed'
         ])->resultArray();
 
+        // Create thumbnail for uploads.
         $thumbSize = Gdn::config('Garden.Thumbnail.Size');
         $imageResizer = Gdn::getContainer()->get(ImageResizer::class);
         $sql = Gdn::sql();
         $tableName = $sql->Database->DatabasePrefix.'Media';
         $query = '';
         foreach ($media as $key => $mediaItem) {
+            // Attach info about thumbnail to media item.
             if (!$mediaItem['ThumbPath']) {
                 $media[$key] = $this->attachThumbInfo($mediaItem, $thumbSize, $imageResizer);
             }
             $media[$key]['ForeignID'] = $foreignID;
             $media[$key]['ForeignTable'] = $foreignTable;
+            // Write back updated info to Media table.
             $mediaModel->update(
                 $media[$key],
                 ['MediaID' => $mediaItem['MediaID']]
@@ -130,42 +158,51 @@ class CKEditorPlugin extends Gdn_Plugin {
         }
     }
 
+    /**
+     * Update media table if discussion contains media.
+     *
+     * @param DiscussionModel $sender Instance of the calling class.
+     * @param mixed $args Event arguments.
+     *
+     * @return void.
+     */
     public function discussionModel_afterSaveComment_handler($sender, $args) {
-        // Ensure there is anything to do at all.
-        if (($args['FormPostValues']['MediaIDs'] ?? false) == false) {
-            return;
-        }
-
         $this->updateMediaTable(
             'Discussion',
             $args['DiscussionID'],
-            explode(',', $args['FormPostValues']['MediaIDs'])
+            explode(',', $args['FormPostValues']['MediaIDs'] ?? '')
         );
     }
 
+    /**
+     * Update media table if comment contains media.
+     *
+     * @param CommentModel $sender Instance of the calling class.
+     * @param mixed $args Event arguments.
+     *
+     * @return void.
+     */
     public function commentModel_afterSaveComment_handler($sender, $args) {
-        // Ensure there is anything to do at all.
-        if (($args['FormPostValues']['MediaIDs'] ?? false) == false) {
-            return;
-        }
-
         $this->updateMediaTable(
             'Comment',
             $args['CommentID'],
-            explode(',', $args['FormPostValues']['MediaIDs'])
+            explode(',', $args['FormPostValues']['MediaIDs'] ?? '')
         );
     }
 
+    /**
+     * Update media table if conversation message contains media.
+     *
+     * @param ConversationMessageModel $sender Instance of the calling class.
+     * @param mixed $args Event arguments.
+     *
+     * @return void.
+     */
     public function conversationMessageModel_afterSave_handler($sender, $args) {
-        // Ensure there is anything to do at all.
-        if (($args['FormPostValues']['MediaIDs'] ?? false) == false) {
-            return;
-        }
-
         $this->updateMediaTable(
             'ConversationMessage',
             $args['Message']['MessageID'],
-            explode(',', $args['FormPostValues']['MediaIDs'])
+            explode(',', $args['FormPostValues']['MediaIDs'] ?? '')
         );
     }
 
@@ -177,6 +214,7 @@ class CKEditorPlugin extends Gdn_Plugin {
      *
      * @param Container $dic
      */
+    /*
     public function container_init(Container $dic) {
         return;
         $dic->rule(Vanilla\Formatting\FormatService::class)->addCall(
@@ -187,89 +225,5 @@ class CKEditorPlugin extends Gdn_Plugin {
             ]
         );
     }
-
-    /**
-     * Dispatcher.
-     *
-     * @param  [type] $sender [description]
-     * @param  [type] $args   [description]
-     * @return [type]         [description]
-     */
-    public function pluginController_CKEditor_create($sender, $args) {
-        switch ($args[0]) {
-            case 'mention':
-                $this->controller_mention($sender, $args);
-                break;
-            case 'tag':
-                $this->controller_tag($sender, $args);
-                break;
-        }
-    }
-
-    /**
-     * This endpoint can be used to add user pictures to mentions.
-     *
-     * @param [type] $sender [description]
-     * @param [type] $args [description]
-     * @return void.
-     */
-    public function controller_mention($sender, $args) {
-        $query = Gdn::request()->get();
-        $query['name'] = ($query['name'] ?? '').'*';
-        $usersApiController = Gdn::getContainer()->get(UsersApiController::class);
-        $data = $usersApiController->index_byNames($query);
-
-        $nameUnique = Gdn::config('Garden.Registration.NameUnique');
-        $users = array_map(
-            function($user) {
-                $user['id'] = '@'.$user['name'];
-                $user['link'] = Gdn::request()->url(
-                    '/profile/'.
-                    ($nameUnique ? '' : $user['userID'].'/').
-                    rawurlencode($user['name'])
-                );
-                return $user;
-            },
-            $data->getData()
-        );
-        $data->setData($users);
-        $data->render();
-    }
-
-    /**
-     * Endpoint for tag.
-     *
-     * @param PluginController $sender Instance of the calling class.
-     * @param mixed $args Request arguments.
-     *
-     * @return void.
-     */
-    public function controller_tag($sender, $args) {
-        $sender->permission('Garden.SignIn.Allow');
-
-        $search = Gdn::request()->get('name', '').'%';
-
-        $result = Gdn::sql()
-            ->select('FullName', "concat('#', %s)", 'id')
-            ->select('FullName', '', 'name')
-            ->from('Tag')
-            ->like('FullName', $search, 'right')
-            ->orderBy('CountDiscussions', 'FullName')
-            ->get()
-            ->resultArray();
-
-        $tags = array_map(
-            function($tag) {
-                $tag['link'] = Gdn::request()->url(
-                    '/discussions/tagged/'.rawurlencode($tag['name'])
-                );
-                return $tag;
-            },
-            $result
-        );
-
-        $result = new Data();
-        $result->setData($tags);
-        $result->render();
-    }
+    */
 }
