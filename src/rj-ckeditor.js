@@ -4,6 +4,7 @@ import css from './css/rj-ckeditor.css';
 // Track created editors.
 const CKEditors = [];
 var editorCounter = 0;
+var users = [];
 
 /**
  * Listen to clear event and clear editor if it is the initial editor.
@@ -11,7 +12,7 @@ var editorCounter = 0;
  * This is needed to clear a comment box after a comment has been posted.
  */
 $( document ).on( 'clearCommentForm', function( e ) {
-    const editorId = e.target.getElementsByClassName('.BodyBox')[0].getAttribute( 'data-ckeditor-id' );
+    const editorId = e.target.getElementsByClassName('BodyBox')[0].getAttribute( 'data-ckeditor-id' );
     if ( editorId == 0 ) {
         CKEditors[ editorId ].setData( '' );
     }
@@ -84,11 +85,13 @@ function createEditor( el ) {
                         // itemRenderer: customMentionedUserRenderer,
                         minimumCharacters: 2
                     },
+                    /*
                     {
-                        marker: '#',
-                        feed: getTags,
+                        marker: ':',
+                        feed: getEmojis,
                         minimumCharacters: 2
                     }
+                    */
                 ]
             }
         })
@@ -116,8 +119,7 @@ function getMentionedUsers( queryText ) {
     return new Promise( resolve => {
         setTimeout( () => {
             const jqxhr = $.get( gdn.url( '/user/tagsearch/' + queryText ), function( data ) {
-                // items = data;
-                items = data.map(data => '@' + data.name);
+                const items = data.map(data => '@' + data.name);
                 resolve( items );
             });
         }, 100 );
@@ -125,9 +127,9 @@ function getMentionedUsers( queryText ) {
 }
 
 /**
- * Currently not needed.
+ * Currently not in us.
  *
- * Could be used to show avatars in mention list.
+ * Could be used to show e.g. avatars in mention list.
  *
  * @param  {[type]} item [description]
  * @return {[type]}      [description]
@@ -140,17 +142,4 @@ function customMentionedUserRenderer( item ) {
     itemElement.textContent = `User: ${ item.name } `;
 
     return itemElement;
-}
-
-
-function getTags( queryText ) {
-    return new Promise( resolve => {
-        setTimeout( () => {
-            const jqxhr = $.get( gdn.url( '/plugin/ckeditor/tag/' + queryText ), function( data ) {
-                items = data.map(data => '#' + data.FullName);
-                resolve( items );
-            });
-        }, 100 );
-    } );
-
 }

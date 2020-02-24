@@ -30,11 +30,13 @@ import Table from '@ckeditor/ckeditor5-table/src/table';
 import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
 
 import VanillaUploadAdapter from '../src/upload/vanillauploadadapter';
+import Mention from '@ckeditor/ckeditor5-mention/src/mention';
+/*
 import CodeBlock from '@ckeditor/ckeditor5-code-block/src/codeblock';
 import HorizontalLine from '@ckeditor/ckeditor5-horizontal-line/src/horizontalline';
 import RemoveFormat from '@ckeditor/ckeditor5-remove-format/src/removeformat';
 import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment';
-
+*/
 export default class ClassicEditor extends ClassicEditorBase {}
 
 // Plugins to include in the build.
@@ -61,7 +63,8 @@ ClassicEditor.builtinPlugins = [
 	PasteFromOffice,
 	Table,
 	TableToolbar,
-    VanillaUploadAdapter
+    VanillaUploadAdapter,
+    Mention
 ];
 
 // Editor configuration.
@@ -105,7 +108,7 @@ ClassicEditor.defaultConfig = {
 };
 
 function MentionCustomization( editor ) {
-    const tagClass = 'ck-tag';
+    const emojiClass = 'ck-emoji';
     const mentionClass = 'ck-mention';
 
     // User mention
@@ -132,13 +135,13 @@ function MentionCustomization( editor ) {
         },
         converterPriority: 'high'
     } );
-
-    // Tag mention
+    /*
+    // Emoji mention
     editor.conversion.for( 'upcast' ).elementToAttribute( {
         view: {
             name: 'a',
-            key: 'data-tag',
-            classes: 'ck-tag',
+            key: 'data-emoji',
+            classes: 'ck-emoji',
             attributes: {
                 href: true
             }
@@ -155,6 +158,7 @@ function MentionCustomization( editor ) {
         },
         converterPriority: 'high'
     } );
+    */
 
     // Downcast the model 'mention' text attribute to a view <a> element.
     editor.conversion.for( 'downcast' ).attributeToElement( {
@@ -176,13 +180,15 @@ function MentionCustomization( editor ) {
                         'href': modelAttributeValue.link
                     } );
                     break;
-                case '#':
+                /*
+                case ':':
 	                return viewWriter.createAttributeElement( 'a', {
-	                    class: 'ck-tag',
-	                    'data-tag': modelAttributeValue.tagID,
+	                    class: 'ck-emoji',
+	                    'data-emoji': modelAttributeValue.emojiID,
 	                    'href': modelAttributeValue.link
 	                } );
 	                break;
+                */
             }
         },
         converterPriority: 'high'
