@@ -1,4 +1,5 @@
 import ClassicEditor from './ckeditor.js';
+import css from './css/rj-ckeditor.css';
 
 // Track created editors.
 const CKEditors = [];
@@ -99,6 +100,7 @@ function createEditor( el ) {
             editor.model.document.on( 'change:data', () => {
                 bodyBox.value = editor.getData();
             } );
+            editor.ui.view.editable.element.classList.add('userContent');
         } )
         .catch( error => {
             console.error( error );

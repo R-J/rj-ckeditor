@@ -18,11 +18,12 @@ module.exports = {
 	performance: { hints: false },
 
 	// entry: path.resolve( __dirname, 'src', 'index.js' ),
-	entry: path.resolve( __dirname, 'src', 'index.js' ),
+	entry: path.resolve( __dirname, 'src', 'rj-ckeditor.js' ),
 
 	output: {
 		path: path.resolve( __dirname, 'js' ),
 		filename: 'rj-ckeditor.js',
+		sourceMapFilename: 'rj-ckeditor.map.js',
 		// The name under which the editor will be exported.
 		/*
 		library: 'ClassicEditor',

@@ -43,9 +43,10 @@ class CKEditorPlugin extends Gdn_Plugin {
 
 
     public function base_render_before($sender) {
-        $sender->addCssFile('rj-ckeditor.css', 'plugins/rj-ckeditor');
-        $sender->addJsFile('ckeditor.js', 'plugins/rj-ckeditor');
-        $sender->addJsFile('rj-ckeditor.js', 'plugins/rj-ckeditor');
+        // $sender->addCssFile('rj-ckeditor.css', 'plugins/rj-ckeditor');
+        // $sender->addCssFile('ckeditor.css', 'plugins/rj-ckeditor');
+        // $sender->addJsFile('ckeditor.js', 'plugins/rj-ckeditor');
+        // $sender->addJsFile('rj-ckeditor.js', 'plugins/rj-ckeditor');
         $sender->addDefinition(
             'AllowedFileExtensions',
             Gdn::config('Garden.Upload.AllowedFileExtensions', [])
@@ -62,6 +63,12 @@ class CKEditorPlugin extends Gdn_Plugin {
             )
         );
         $sender->addDefinition('CKEditorToolbar', $toolbar);
+    }
+
+    public function base_afterBody_handler($sender) {
+            $assetPath = asset('/plugins/rj-ckeditor/js');
+        // echo '<script src="'.$assetPath.'/ckeditor.js'.'"></script>';
+        echo '<script src="'.$assetPath.'/rj-ckeditor.js'.'"></script>';
     }
 
     public function vanillaController_cke_create($sender) {

@@ -20,7 +20,7 @@ import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption';
 import ImageStyle from '@ckeditor/ckeditor5-image/src/imagestyle';
 import ImageToolbar from '@ckeditor/ckeditor5-image/src/imagetoolbar';
 import ImageUpload from '@ckeditor/ckeditor5-image/src/imageupload';
-import Indent from '@ckeditor/ckeditor5-indent/src/indent';
+// import Indent from '@ckeditor/ckeditor5-indent/src/indent';
 import Link from '@ckeditor/ckeditor5-link/src/link';
 import List from '@ckeditor/ckeditor5-list/src/list';
 import MediaEmbed from '@ckeditor/ckeditor5-media-embed/src/mediaembed';
@@ -28,6 +28,12 @@ import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
 import PasteFromOffice from '@ckeditor/ckeditor5-paste-from-office/src/pastefromoffice';
 import Table from '@ckeditor/ckeditor5-table/src/table';
 import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
+
+import VanillaUploadAdapter from '../src/upload/vanillauploadadapter';
+import CodeBlock from '@ckeditor/ckeditor5-code-block/src/codeblock';
+import HorizontalLine from '@ckeditor/ckeditor5-horizontal-line/src/horizontalline';
+import RemoveFormat from '@ckeditor/ckeditor5-remove-format/src/removeformat';
+import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment';
 
 export default class ClassicEditor extends ClassicEditorBase {}
 
@@ -47,7 +53,7 @@ ClassicEditor.builtinPlugins = [
 	ImageStyle,
 	ImageToolbar,
 	ImageUpload,
-	Indent,
+	// Indent,
 	Link,
 	List,
 	MediaEmbed,
@@ -69,9 +75,7 @@ ClassicEditor.defaultConfig = {
 			'bulletedList',
 			'numberedList',
 			'|',
-			'indent',
-			'outdent',
-			'|',
+			// 'indent', 'outdent', '|',
 			'imageUpload',
 			'blockQuote',
 			'insertTable',
@@ -98,3 +102,88 @@ ClassicEditor.defaultConfig = {
 	// This value must be kept in sync with the language defined in webpack.config.js.
 	language: 'en'
 };
+
+function MentionCustomization( editor ) {
+    const tagClass = 'ck-tag';
+    const mentionClass = 'ck-mention';
+
+    // User mention
+    editor.conversion.for( 'upcast' ).elementToAttribute( {
+        view: {
+            name: 'a',
+            key: 'data-mention',
+            classes: 'ck-mention',
+            attributes: {
+                href: true,
+                'data-user-id': true
+            }
+        },
+        model: {
+            key: 'mention',
+            value: viewItem => {
+                const mentionAttribute = editor.plugins.get( 'Mention' ).toMentionAttribute( viewItem, {
+                    link: viewItem.getAttribute( 'href' ),
+                    userId: viewItem.getAttribute( 'data-user-id' )
+                } );
+
+                return mentionAttribute;
+            }
+        },
+        converterPriority: 'high'
+    } );
+
+    // Tag mention
+    editor.conversion.for( 'upcast' ).elementToAttribute( {
+        view: {
+            name: 'a',
+            key: 'data-tag',
+            classes: 'ck-tag',
+            attributes: {
+                href: true
+            }
+        },
+        model: {
+            key: 'mention',
+            value: viewItem => {
+                const mentionAttribute = editor.plugins.get( 'Mention' ).toMentionAttribute( viewItem, {
+                    link: viewItem.getAttribute( 'href' )
+                } );
+
+                return mentionAttribute;
+            }
+        },
+        converterPriority: 'high'
+    } );
+
+    // Downcast the model 'mention' text attribute to a view <a> element.
+    editor.conversion.for( 'downcast' ).attributeToElement( {
+        model: 'mention',
+        view: ( modelAttributeValue, viewWriter ) => {
+            // Do not convert empty attributes (lack of value means no mention).
+            if ( !modelAttributeValue ) {
+                return;
+            }
+            if ( modelAttributeValue.id == undefined ) {
+            	return;
+            }
+            switch ( modelAttributeValue.id.substr( 0, 1 ) ) {
+                case'@':
+                    return viewWriter.createAttributeElement( 'a', {
+                        class: 'ck-mention',
+                        'data-mention': modelAttributeValue.id,
+                        'data-user-id': modelAttributeValue.userID,
+                        'href': modelAttributeValue.link
+                    } );
+                    break;
+                case '#':
+	                return viewWriter.createAttributeElement( 'a', {
+	                    class: 'ck-tag',
+	                    'data-tag': modelAttributeValue.tagID,
+	                    'href': modelAttributeValue.link
+	                } );
+	                break;
+            }
+        },
+        converterPriority: 'high'
+    } );
+}
