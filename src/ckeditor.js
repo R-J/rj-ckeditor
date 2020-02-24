@@ -60,7 +60,8 @@ ClassicEditor.builtinPlugins = [
 	Paragraph,
 	PasteFromOffice,
 	Table,
-	TableToolbar
+	TableToolbar,
+    VanillaUploadAdapter
 ];
 
 // Editor configuration.
