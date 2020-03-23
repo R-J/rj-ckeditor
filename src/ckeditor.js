@@ -11,13 +11,18 @@ import UploadAdapter from '@ckeditor/ckeditor5-adapter-ckfinder/src/uploadadapte
 import Autoformat from '@ckeditor/ckeditor5-autoformat/src/autoformat';
 import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
 import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic';
+import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
+import Strikethrough from '@ckeditor/ckeditor5-basic-styles/src/strikethrough';
+import Code from '@ckeditor/ckeditor5-basic-styles/src/code';
+// import Subscript from '@ckeditor/ckeditor5-basic-styles/src/subscript';
+// import Superscript from '@ckeditor/ckeditor5-basic-styles/src/superscript';
 import BlockQuote from '@ckeditor/ckeditor5-block-quote/src/blockquote';
 import CKFinder from '@ckeditor/ckeditor5-ckfinder/src/ckfinder';
-import EasyImage from '@ckeditor/ckeditor5-easy-image/src/easyimage';
+// import EasyImage from '@ckeditor/ckeditor5-easy-image/src/easyimage';
 import Heading from '@ckeditor/ckeditor5-heading/src/heading';
 import Image from '@ckeditor/ckeditor5-image/src/image';
-import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption';
-import ImageStyle from '@ckeditor/ckeditor5-image/src/imagestyle';
+// import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption';
+// import ImageStyle from '@ckeditor/ckeditor5-image/src/imagestyle';
 import ImageToolbar from '@ckeditor/ckeditor5-image/src/imagetoolbar';
 import ImageUpload from '@ckeditor/ckeditor5-image/src/imageupload';
 // import Indent from '@ckeditor/ckeditor5-indent/src/indent';
@@ -31,78 +36,88 @@ import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
 
 import VanillaUploadAdapter from '../src/upload/vanillauploadadapter';
 import Mention from '@ckeditor/ckeditor5-mention/src/mention';
-/*
-import CodeBlock from '@ckeditor/ckeditor5-code-block/src/codeblock';
+// import CodeBlock from '@ckeditor/ckeditor5-code-block/src/codeblock';
 import HorizontalLine from '@ckeditor/ckeditor5-horizontal-line/src/horizontalline';
 import RemoveFormat from '@ckeditor/ckeditor5-remove-format/src/removeformat';
-import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment';
-*/
+// import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment';
+// import ImageResize from '@ckeditor/ckeditor5-image/src/imageresize';
+
 export default class ClassicEditor extends ClassicEditorBase {}
 
 // Plugins to include in the build.
 ClassicEditor.builtinPlugins = [
-	Essentials,
-	UploadAdapter,
-	Autoformat,
-	Bold,
-	Italic,
-	BlockQuote,
-	CKFinder,
-	EasyImage,
-	Heading,
-	Image,
-	ImageCaption,
-	ImageStyle,
-	ImageToolbar,
-	ImageUpload,
-	// Indent,
-	Link,
-	List,
-	MediaEmbed,
-	Paragraph,
-	PasteFromOffice,
-	Table,
-	TableToolbar,
+    Essentials,
+    UploadAdapter,
+    Autoformat,
+    Bold,
+    Italic,
+    Underline,
+    Strikethrough,
+    Code,
+    // Subscript,
+    // Superscript,
+    BlockQuote,
+    CKFinder,
+    // EasyImage,
+    Heading,
+    Image,
+    // ImageCaption,
+    // ImageStyle,
+    ImageToolbar,
+    ImageUpload,
+    // Indent,
+    Link,
+    List,
+    MediaEmbed,
+    Paragraph,
+    PasteFromOffice,
+    Table,
+    TableToolbar,
     VanillaUploadAdapter,
-    Mention
+    Mention,
+    // CodeBlock,
+    HorizontalLine,
+    RemoveFormat,
+    // Alignment,
+    // ImageResize
 ];
 
 // Editor configuration.
 ClassicEditor.defaultConfig = {
-	toolbar: {
-		items: [
-			'heading',
-			'|',
-			'bold',
-			'italic',
-			'link',
-			'bulletedList',
-			'numberedList',
-			'|',
-			// 'indent', 'outdent', '|',
-			'imageUpload',
-			'blockQuote',
-			'insertTable',
-			'mediaEmbed',
-			'undo',
-			'redo'
-		]
-	},
-	image: {
-		toolbar: [
-			'imageStyle:full',
-			'imageStyle:side',
-			'|',
-			'imageTextAlternative'
-		]
-	},
-	table: {
-		contentToolbar: [
-			'tableColumn',
-			'tableRow',
-			'mergeTableCells'
-		]
-	}
+    toolbar: {
+        items: [
+            'heading',
+            '|',
+            'bold',
+            'italic',
+            'link',
+            'bulletedList',
+            'numberedList',
+            '|',
+            // 'indent', 'outdent', '|',
+            'imageUpload',
+            'blockQuote',
+            'insertTable',
+            'mediaEmbed',
+            'undo',
+            'redo'
+        ]
+    },
+    image: {
+        toolbar: [
+            // 'imageStyle:full',
+            // 'imageStyle:side',
+            // '|',
+            // 'imageTextAlternative'
+        ]
+    },
+    table: {
+        contentToolbar: [
+            'tableColumn',
+            'tableRow',
+            'mergeTableCells'
+        ]
+    }
 };
 
 function MentionCustomization( editor ) {
@@ -167,7 +182,7 @@ function MentionCustomization( editor ) {
                 return;
             }
             if ( modelAttributeValue.id == undefined ) {
-            	return;
+                return;
             }
             switch ( modelAttributeValue.id.substr( 0, 1 ) ) {
                 case'@':
@@ -180,12 +195,12 @@ function MentionCustomization( editor ) {
                     break;
                 /*
                 case ':':
-	                return viewWriter.createAttributeElement( 'a', {
-	                    class: 'ck-emoji',
-	                    'data-emoji': modelAttributeValue.emojiID,
-	                    'href': modelAttributeValue.link
-	                } );
-	                break;
+                    return viewWriter.createAttributeElement( 'a', {
+                        class: 'ck-emoji',
+                        'data-emoji': modelAttributeValue.emojiID,
+                        'href': modelAttributeValue.link
+                    } );
+                    break;
                 */
             }
         },

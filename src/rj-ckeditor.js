@@ -63,10 +63,12 @@ function createEditor( el ) {
     return ClassicEditor
         .create( container, {
             language: gdn.definition('CKEditorLanguage'),
+            toolbar: {
+                items: gdn.definition('CKEditorToolbar')
+            },
             vanillaUpload: {
                 // The URL the images are uploaded to.
                 uploadUrl: gdn.url('/api/v2/media'),
-                // uploadUrl: gdn.url('/api/v2/ckeditor/upload'),
                 formFields: {
                     transientKey: gdn.definition('TransientKey')
                 },
@@ -92,6 +94,11 @@ function createEditor( el ) {
                         minimumCharacters: 2
                     }
                     */
+                ]
+            },
+            codeBlock: {
+                languages: [
+                    { language: 'plaintext', label: 'Plain text' },
                 ]
             }
         })

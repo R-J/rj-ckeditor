@@ -4,22 +4,20 @@ namespace RJPlugins;
 
 use Gdn_Plugin;
 use Gdn;
+use MediaModel;
+use Vanilla\ImageResizer;
+
+/*
 use Gdn_Format;
 use UsersApiController;
 use Garden\Web\Data as Data;
 use Vanilla\Formatting\Html\HtmlSanitizer;
 use Vanilla\EmbeddedContent\LegacyEmbedReplacer\VanillaHtmlFormatter as VanillaHtmlFormatter;
 use HtmlFormatter;
-use CKEditorHtmlFormatter;
 use Garden\Container\Container as Container;
 use Vanilla\Formatting\FormatService;
 use Vanilla\Formatting\Formats\HtmlFormat as HtmlFormat;
-use MediaModel;
-use Vanilla\ImageResizer;
-
-
-// use RJPlugins\CKEditorHtmlFormat;
-
+*/
 
 class CKEditorPlugin extends Gdn_Plugin {
     /**
@@ -69,6 +67,17 @@ class CKEditorPlugin extends Gdn_Plugin {
     }
 
     /**
+     * Add CSS file.
+     *
+     * @param AssetModel $sender Instance of the calling class.
+     *
+     * @return void.
+     */
+    public function assetModel_styleCss_handler($sender) {
+         $sender->addCssFile('rj-ckeditor.css', 'plugins/rj-ckeditor');
+    }
+
+    /**
      * Inject CKEditor JS at the end of the page.
      *
      * @param Gdn_controller $sender Instance of the calling class.
@@ -108,7 +117,6 @@ class CKEditorPlugin extends Gdn_Plugin {
         $media['ThumbWidth'] = $thumb['width'];
         $media['ThumbHeight'] = $thumb['height'];
         $media['ThumbPath'] = $thumbMediaPath;
-
         return $media;
     }
 
@@ -140,19 +148,16 @@ class CKEditorPlugin extends Gdn_Plugin {
         // Create thumbnail for uploads.
         $thumbSize = Gdn::config('Garden.Thumbnail.Size');
         $imageResizer = Gdn::getContainer()->get(ImageResizer::class);
-        $sql = Gdn::sql();
-        $tableName = $sql->Database->DatabasePrefix.'Media';
-        $query = '';
         foreach ($media as $key => $mediaItem) {
             // Attach info about thumbnail to media item.
             if (!$mediaItem['ThumbPath']) {
-                $media[$key] = $this->attachThumbInfo($mediaItem, $thumbSize, $imageResizer);
+                $mediaItem = $this->attachThumbInfo($mediaItem, $thumbSize, $imageResizer);
             }
-            $media[$key]['ForeignID'] = $foreignID;
-            $media[$key]['ForeignTable'] = $foreignTable;
+            $mediaItem['ForeignID'] = $foreignID;
+            $mediaItem['ForeignTable'] = $foreignTable;
             // Write back updated info to Media table.
             $mediaModel->update(
-                $media[$key],
+                $mediaItem,
                 ['MediaID' => $mediaItem['MediaID']]
             );
         }
@@ -201,7 +206,7 @@ class CKEditorPlugin extends Gdn_Plugin {
     public function conversationMessageModel_afterSave_handler($sender, $args) {
         $this->updateMediaTable(
             'ConversationMessage',
-            $args['Message']['MessageID'],
+            $args['Message']->MessageID,
             explode(',', $args['FormPostValues']['MediaIDs'] ?? '')
         );
     }

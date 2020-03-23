@@ -1,24 +1,23 @@
-/*
-.ck.ck-content.ck-editor__editable.ck-editor__editable_inline {
+blockquote {
+  border-left: solid rgb(216,217,219) 6px;
+  box-sizing: border-box;
+  display: block;
+  margin: 0px;
+  padding-bottom: 3px;
+  padding-left: 18px;
+  padding-right: 3px;
+  padding-top: 3px;
+  vertical-align: middle
+}
+
+.ck-content {
     min-height: 8em;
 }
-.ck.ck-editor__main {
-    margin-bottom: 1em;
+
+.ck-content ul {
+   list-style: disc inside;
 }
 
-.ck.ck-editor__main ul, .ck.ck-editor__main ol {
-    display: block;
-    list-style: disc outside none;
-    margin: 1em 0;
-    padding: 0 0 0 40px;
+.ck-content ol {
+   list-style: decimal inside;
 }
-.ck.ck-editor__main ol {
-    list-style-type: decimal;
-}
-
-.ck.ck-editor__main li {
-    display: list-item;
-}
-*/
-
-/* use userContent instead */

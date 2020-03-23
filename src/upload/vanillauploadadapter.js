@@ -175,7 +175,7 @@ class Adapter {
 				return reject( response && response.error && response.error.message ? response.error.message : genericErrorText );
 			}
 
-// this._attachMediaIdToForm( response.mediaID );
+			this._attachMediaIdToForm( response.mediaID );
 
 			resolve( response.url ? { default: response.url } : response.urls );
 		} );
