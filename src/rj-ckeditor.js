@@ -125,7 +125,8 @@ function createEditor( el ) {
 function getMentionedUsers( queryText ) {
     return new Promise( resolve => {
         setTimeout( () => {
-            const jqxhr = $.get( gdn.url( '/user/tagsearch/' + queryText ), function( data ) {
+            // const jqxhr = $.get( gdn.url( '/user/tagsearch/' + queryText ), function( data ) {
+            const jqxhr = $.get( gdn.url( '/plugin/ckeditor/mention/' + queryText ), function( data ) {
                 const items = data.map(data => '@' + data.name);
                 resolve( items );
             });

@@ -4,7 +4,7 @@
     "name": "CKEditor",
     "description": "Use CKEditor 5.0 with Vanilla",
     "license": "MIT",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "settingsUrl": "/settings/ckeditor",
     "pluginUrl": "https://github.com/r-j/rj-ckeditor",
     "authors": [
